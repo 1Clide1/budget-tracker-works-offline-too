@@ -19,7 +19,10 @@
     <!-- link the manifest.json to the main site -->
     <link rel="manifest" href="manifest.json" />
     <!-- this will load up the service worker once the site loads -->
-    <!-- I am defering this because I want the service worker to start once the site is open -->
+    <!-- I am defering all of the scripts because I want everything to load as fast as possible -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script defer src="js/index.js"></script>
+    <script defer src="/idb.js"></script>
     <script defer type="text/javascript">
       (function () {
         if ("serviceWorker" in navigator) {
@@ -67,8 +70,5 @@
 
       <canvas id="myChart"></canvas>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-    <script src="js/index.js"></script>
   </body>
 </html>
