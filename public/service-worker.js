@@ -47,3 +47,39 @@ self.addEventListener("activate", function (evt) {
   );
   self.clients.claim();
 });
+// intercept fetch requests from the api
+self.addEventListener("fetch", function (evt) {
+  if (evt.request.url.includes("/api/")) {
+    evt.respondWith(
+      caches
+        .open(DATA_CACHE_NAME)
+        .then((cache) => {
+          return fetch(evt.request)
+            .then((response) => {
+              if (response.status === 200) {
+                cache.put(evt.request.url, response.clone());
+              }
+              return response;
+            })
+            .catch((err) => {
+              return cache.match(evt.request);
+            });
+        })
+        .catch((err) => console.log(err))
+    );
+    return;
+  }
+  // if the cache does not include an api, this is a must have if there is no api at all
+  evt.respondWith(
+    fetch(evt.request).catch(function () {
+      return caches.match(evt.request).then(function (response) {
+        if (response) {
+          return response;
+        } else if (evt.request.headers.get("accept").includes("text/html")) {
+          // return the cached home page for all requests for html pages
+          return caches.match("/");
+        }
+      });
+    })
+  );
+});
