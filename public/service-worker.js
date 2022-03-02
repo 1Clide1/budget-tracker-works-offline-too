@@ -47,6 +47,7 @@ self.addEventListener("activate", function (evt) {
   );
   self.clients.claim();
 });
+
 // intercept fetch requests from the api
 self.addEventListener("fetch", function (evt) {
   if (evt.request.url.includes("/api/")) {
