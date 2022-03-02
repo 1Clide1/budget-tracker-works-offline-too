@@ -23,8 +23,8 @@ request.onsuccess = function (event) {
 
   // this just checks if the app is online before it reads from the db
   if (navigator.onLine) {
-    // future cutsom function to check the database and get everything from the database
-    checkDatabase();
+    //cutsom function to check the database and get everything from the database
+    uploadToDatabase();
   }
 };
 // the onerror function just in case something goes wrong
@@ -35,10 +35,48 @@ request.onerror = function (event) {
   );
 };
 // function to save transactions to the database
-// sbt= the function's name just shorten down
-function saveBudgetTransaction(sbt) {
+function saveRecord(record) {
   const transaction = db.transaction(["pending"], "readwrite");
   const store = transaction.objectStore("pending");
 
-  store.add(sbt);
+  store.add(record);
 }
+// function to check the database and get all of the transactions from it
+function uploadToDatabase() {
+  // get all of the transactions
+  const transaction = db.transaction(["pending"], "readwrite");
+  const store = transaction.objectStore("pending");
+  //   keep the same name as the actual indexxedDB function
+  const getAll = store.getAll();
+  // once the getAll is successful then run this function
+  getAll.onsuccess = function () {
+    //   if the length is bigger than 0 then grab everything from the indexxed db store and send it to api route api/transaction/bulk since that part of the api can submit many transactions at once
+    if (getAll.result.length > 0) {
+      fetch("/api/transaction/bulk", {
+        method: "POST",
+        body: JSON.stringify(getAll.result),
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((serverResponse) => {
+          if (serverResponse.message) {
+            throw new Error(serverResponse);
+          }
+          //   delete the transactions if they were already successful
+          const transaction = db.transaction(["pending"], "readwrite");
+          const store = transaction.objectStore("pending");
+          store.clear();
+          alert("All transactions were saved!");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+}
+
+// this listens to when the app becomes online again
+window.addEventListener("online", uploadToDatabase);
