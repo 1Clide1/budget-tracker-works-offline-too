@@ -17,3 +17,13 @@ request.onupgradeneeded = function (event) {
   db.createObjectStore("pending", { autoIncrement: true });
 };
 // after the update event then the success event should run
+request.onsuccess = function (event) {
+  // put the result in the db
+  db = event.target.result;
+
+  // this just checks if the app is online before it reads from the db
+  if (navigator.onLine) {
+    checkDatabase();
+  }
+};
+// the onerror function just in case something goes wrong
