@@ -23,7 +23,22 @@ request.onsuccess = function (event) {
 
   // this just checks if the app is online before it reads from the db
   if (navigator.onLine) {
+    // future cutsom function to check the database and get everything from the database
     checkDatabase();
   }
 };
 // the onerror function just in case something goes wrong
+request.onerror = function (event) {
+  // on error console log an error message
+  console.log(
+    "Looks like something went wrong check:" + event.target.errorCode
+  );
+};
+// function to save transactions to the database
+// sbt= the function's name just shorten down
+function saveBudgetTransaction(sbt) {
+  const transaction = db.transaction(["pending"], "readwrite");
+  const store = transaction.objectStore("pending");
+
+  store.add(sbt);
+}
